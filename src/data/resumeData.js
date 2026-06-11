@@ -5,9 +5,34 @@ export const resumeData = {
     subtitles: ["GenAI Developer Intern", "AI/ML Developer", "Software Engineer", "UI/UX Designer"],
     email: "ankushkundapuraannaiah@gmail.com",
     location: "Bengaluru, Karnataka, India",
-    linkedin: "linkedin.com/in/ankushkundapura-annaiah-1797ba384",
-    github: "github.com/ankushkundapuraannaiah-bit",
-    defaultResume: "/resumes/Profile.pdf"
+    github: "ankushkundapuraannaiah-bit",
+    linkedin: "ankush-kundapura-annaiah-1797ba384",
+    defaultResume: "/resumes/Profile.pdf",
+    education: [
+      {
+        institution: "REVA University",
+        degree: "Bachelor of Technology - B.Tech, Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
+        period: "September 2025 – September 2029",
+        location: "Bengaluru, Karnataka, India"
+      },
+      {
+        institution: "Excel PU College",
+        degree: "Pre University Education (PCMB)",
+        period: "April 2023 – March 2025",
+        location: "Karnataka, India"
+      },
+      {
+        institution: "MNR School of Excellence",
+        degree: "Primary & Secondary Schooling",
+        period: "March 2011 – March 2023",
+        location: "Karnataka, India"
+      }
+    ],
+    languages: [
+      { name: "English", level: "Full Professional" },
+      { name: "Kannada", level: "Professional Working" },
+      { name: "Hindi", level: "Full Professional" }
+    ]
   },
   personas: {
     aiml: {

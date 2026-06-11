@@ -1,207 +1,240 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Moon, Menu, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, Menu, X, Download } from 'lucide-react';
+import { Github, Linkedin } from './SocialIcons';
 
-export default function Navbar({ theme, toggleTheme }) {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+const navLinks = [
+  { href: '#about',         label: 'About' },
+  { href: '#skills',        label: 'Skills' },
+  { href: '#experience',    label: 'Experience' },
+  { href: '#projects',      label: 'Projects' },
+  { href: '#certifications',label: 'Certs' },
+  { href: '#education',     label: 'Education' },
+  { href: '#contact',       label: 'Contact' },
+];
+
+export default function Navbar({ profileData }) {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('about');
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const navLinks = [
-    { name: 'About', href: '#about' },
-    { name: 'Skills', href: '#skills' },
-    { name: 'Experience', href: '#experience' },
-    { name: 'Projects', href: '#projects' },
-    { name: 'Contact', href: '#contact' },
-  ];
+  // Section tracking
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) setActiveSection(e.target.id);
+        });
+      },
+      { threshold: 0.4 }
+    );
+    navLinks.forEach(({ href }) => {
+      const el = document.querySelector(href);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <nav style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100%',
-      zIndex: 100,
-      padding: isScrolled ? '1rem 0' : '1.5rem 0',
-      background: isScrolled ? 'var(--bg-glass)' : 'transparent',
-      backdropFilter: isScrolled ? 'blur(16px)' : 'none',
-      borderBottom: isScrolled ? '1px solid var(--border-color)' : 'none',
-      transition: 'all var(--transition-normal)'
-    }}>
-      <div className="container" style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}>
-        {/* Logo */}
-        <a href="#" style={{
-          fontFamily: 'var(--font-heading)',
-          fontWeight: 800,
-          fontSize: '1.4rem',
-          letterSpacing: '-0.5px',
+    <>
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.7, ease: [0.19, 1, 0.22, 1] }}
+        style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0,
+          zIndex: 100,
+          padding: scrolled ? '0.75rem 0' : '1.25rem 0',
+          transition: 'all 0.4s ease',
+          backdropFilter: scrolled ? 'blur(24px)' : 'none',
+          WebkitBackdropFilter: scrolled ? 'blur(24px)' : 'none',
+          background: scrolled
+            ? 'rgba(3, 5, 10, 0.85)'
+            : 'transparent',
+          borderBottom: scrolled ? '1px solid var(--border-subtle)' : 'none',
+        }}
+      >
+        <div className="container" style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '0.5rem',
+          justifyContent: 'space-between',
         }}>
-          <span style={{
-            background: 'var(--gradient-primary)',
+          {/* Logo */}
+          <a href="#about" style={{
+            fontFamily: 'var(--font-display)',
+            fontWeight: 800,
+            fontSize: '1.25rem',
+            letterSpacing: '-0.04em',
+            background: 'var(--gradient-hero)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-          }}>ANKUSH.</span>
-        </a>
-
-        {/* Desktop Navigation Links */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '2.5rem',
-        }} className="desktop-nav">
-          <div style={{
-            display: 'flex',
-            gap: '2rem',
-            alignItems: 'center',
+            backgroundClip: 'text',
           }}>
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                style={{
-                  fontFamily: 'var(--font-heading)',
-                  fontSize: '0.95rem',
-                  fontWeight: 500,
-                  color: 'var(--text-secondary)',
-                  transition: 'color var(--transition-fast)',
-                }}
-                onMouseOver={(e) => e.target.style.color = 'var(--primary)'}
-                onMouseOut={(e) => e.target.style.color = 'var(--text-secondary)'}
-              >
-                {link.name}
-              </a>
-            ))}
+            AK
+          </a>
+
+          {/* Desktop Nav */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} className="desktop-nav">
+            {navLinks.map(({ href, label }) => {
+              const id = href.slice(1);
+              const isActive = activeSection === id;
+              return (
+                <a
+                  key={href}
+                  href={href}
+                  style={{
+                    padding: '0.4rem 0.85rem',
+                    borderRadius: '100px',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    fontFamily: 'var(--font-heading)',
+                    color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
+                    background: isActive ? 'var(--bg-glass-hi)' : 'transparent',
+                    border: isActive ? '1px solid var(--border-mid)' : '1px solid transparent',
+                    transition: 'all 0.2s ease',
+                    letterSpacing: '0.01em',
+                  }}
+                  onMouseOver={e => {
+                    if (!isActive) e.currentTarget.style.color = 'var(--text-primary)';
+                  }}
+                  onMouseOut={e => {
+                    if (!isActive) e.currentTarget.style.color = 'var(--text-muted)';
+                  }}
+                >
+                  {label}
+                </a>
+              );
+            })}
           </div>
 
-          {/* Theme Toggle Button */}
-          <button
-            onClick={toggleTheme}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '40px',
-              height: '40px',
-              borderRadius: '12px',
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-color)',
-              color: 'var(--text-primary)',
-              transition: 'all var(--transition-fast)'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.borderColor = 'var(--primary)';
-              e.currentTarget.style.boxShadow = '0 0 10px var(--border-glow)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.borderColor = 'var(--border-color)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-            aria-label="Toggle Theme"
-          >
-            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
-        </div>
-
-        {/* Mobile Navigation controls */}
-        <div style={{ display: 'none', alignItems: 'center', gap: '1rem' }} className="mobile-nav-toggle">
-          {/* Mobile Theme Toggle */}
-          <button
-            onClick={toggleTheme}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-color)',
-              color: 'var(--text-primary)'
-            }}
-          >
-            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
-
-          {/* Hamburger Menu */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-color)',
-              color: 'var(--text-primary)'
-            }}
-          >
-            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu Dropdown */}
-      {mobileMenuOpen && (
-        <div style={{
-          position: 'fixed',
-          top: '64px',
-          left: 0,
-          width: '100%',
-          height: 'calc(100vh - 64px)',
-          background: 'var(--bg-primary)',
-          zIndex: 99,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '2rem',
-          padding: '2rem',
-          borderTop: '1px solid var(--border-color)'
-        }}>
-          {navLinks.map((link) => (
+          {/* Right Actions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <a
-              key={link.name}
-              href={link.href}
-              onClick={() => setMobileMenuOpen(false)}
+              href={`https://github.com/${profileData.github}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="GitHub"
               style={{
-                fontFamily: 'var(--font-heading)',
-                fontSize: '1.5rem',
-                fontWeight: 600,
-                color: 'var(--text-primary)',
+                width: 36, height: 36, borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: '1px solid var(--border-subtle)',
+                background: 'var(--bg-glass)',
+                color: 'var(--text-muted)',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.color = 'var(--text-primary)';
+                e.currentTarget.style.borderColor = 'var(--border-mid)';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.color = 'var(--text-muted)';
+                e.currentTarget.style.borderColor = 'var(--border-subtle)';
               }}
             >
-              {link.name}
+              <Github size={16} />
             </a>
-          ))}
-        </div>
-      )}
+            <a
+              href={`https://linkedin.com/in/${profileData.linkedin}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="LinkedIn"
+              style={{
+                width: 36, height: 36, borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: '1px solid var(--border-subtle)',
+                background: 'var(--bg-glass)',
+                color: 'var(--text-muted)',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.color = 'var(--cyan)';
+                e.currentTarget.style.borderColor = 'rgba(56,189,248,0.3)';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.color = 'var(--text-muted)';
+                e.currentTarget.style.borderColor = 'var(--border-subtle)';
+              }}
+            >
+              <Linkedin size={16} />
+            </a>
 
-      {/* Embedded CSS style overrides for mobile responsive hide/show */}
+            {/* Mobile menu toggle */}
+            <button
+              onClick={() => setMobileOpen(o => !o)}
+              style={{
+                width: 36, height: 36, borderRadius: '50%',
+                display: 'none',
+                alignItems: 'center', justifyContent: 'center',
+                border: '1px solid var(--border-subtle)',
+                background: 'var(--bg-glass)',
+                color: 'var(--text-secondary)',
+              }}
+              className="mobile-menu-btn"
+              aria-label="Menu"
+            >
+              {mobileOpen ? <X size={16} /> : <Menu size={16} />}
+            </button>
+          </div>
+        </div>
+      </motion.nav>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            style={{
+              position: 'fixed',
+              top: 0, left: 0, right: 0, bottom: 0,
+              zIndex: 99,
+              background: 'rgba(0,0,0,0.96)',
+              backdropFilter: 'blur(24px)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '1.5rem',
+            }}
+          >
+            {navLinks.map(({ href, label }) => (
+              <a
+                key={href}
+                href={href}
+                onClick={() => setMobileOpen(false)}
+                style={{
+                  fontSize: '2rem',
+                  fontWeight: 800,
+                  fontFamily: 'var(--font-display)',
+                  color: 'var(--text-secondary)',
+                  letterSpacing: '-0.03em',
+                  transition: 'color 0.2s',
+                }}
+                onMouseOver={e => e.currentTarget.style.color = 'var(--text-primary)'}
+                onMouseOut={e => e.currentTarget.style.color = 'var(--text-secondary)'}
+              >
+                {label}
+              </a>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <style>{`
         @media (max-width: 768px) {
-          .desktop-nav {
-            display: none !important;
-          }
-          .mobile-nav-toggle {
-            display: flex !important;
-          }
+          .desktop-nav { display: none !important; }
+          .mobile-menu-btn { display: flex !important; }
         }
       `}</style>
-    </nav>
+    </>
   );
 }

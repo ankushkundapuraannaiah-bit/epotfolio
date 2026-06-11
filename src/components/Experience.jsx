@@ -1,183 +1,175 @@
-import React from 'react';
-import { Calendar, MapPin, Briefcase } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
+import { MapPin, Calendar, ExternalLink, Zap } from 'lucide-react';
 
-export default function Experience({ activePersona, personaData }) {
-  const currentExperience = personaData[activePersona].experience;
+function ExperienceCard({ exp, index }) {
+  const ref = useRef();
+  const inView = useInView(ref, { once: true, margin: '-60px' });
 
   return (
-    <section id="experience" className="section" style={{ background: 'var(--bg-secondary)', position: 'relative' }}>
-      <div className="container">
-        {/* Section Header */}
-        <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
-          <h2 style={{ fontSize: 'clamp(2rem, 4vw, 2.75rem)', marginBottom: '0.75rem' }}>
-            Work <span style={{
-              background: 'var(--gradient-primary)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}>Experience</span>
-          </h2>
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, x: -30 }}
+      animate={inView ? { opacity: 1, x: 0 } : {}}
+      transition={{ duration: 0.7, delay: index * 0.1, ease: [0.19, 1, 0.22, 1] }}
+      style={{ display: 'flex', gap: '2rem', position: 'relative' }}
+    >
+      {/* Timeline line */}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        flexShrink: 0,
+      }}>
+        <div style={{
+          width: 16, height: 16, borderRadius: '50%',
+          background: 'var(--gradient-accent)',
+          boxShadow: '0 0 20px rgba(79, 135, 255, 0.5)',
+          flexShrink: 0,
+          marginTop: '0.25rem',
+          position: 'relative',
+          zIndex: 2,
+        }}>
           <div style={{
-            width: '60px',
-            height: '4px',
-            background: 'var(--gradient-primary)',
-            margin: '0 auto 1.5rem auto',
-            borderRadius: '2px'
-          }}></div>
-          <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto' }}>
-            A timeline of my professional roles, highlighting specific achievements and contributions aligned with my active persona.
-          </p>
+            position: 'absolute', inset: -3, borderRadius: '50%',
+            border: '1px solid rgba(79, 135, 255, 0.3)',
+          }} />
+        </div>
+        <div style={{
+          width: 1,
+          flex: 1,
+          background: 'linear-gradient(to bottom, rgba(79, 135, 255, 0.3), transparent)',
+          minHeight: '60px',
+          marginTop: '8px',
+        }} />
+      </div>
+
+      {/* Card */}
+      <div
+        className="glass-card"
+        style={{
+          padding: '2rem 2.25rem',
+          marginBottom: '2rem',
+          flex: 1,
+        }}
+      >
+        {/* Header */}
+        <div style={{ marginBottom: '1.25rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.5rem' }}>
+            <h3 style={{
+              fontSize: '1.2rem',
+              fontWeight: 800,
+              fontFamily: 'var(--font-display)',
+              color: 'var(--text-primary)',
+              letterSpacing: '-0.02em',
+            }}>
+              {exp.role}
+            </h3>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              padding: '0.25rem 0.85rem',
+              borderRadius: '100px',
+              border: '1px solid rgba(56, 189, 248, 0.2)',
+              background: 'rgba(56, 189, 248, 0.06)',
+              fontSize: '0.72rem',
+              fontWeight: 600,
+              color: 'var(--cyan)',
+              fontFamily: 'var(--font-heading)',
+              letterSpacing: '0.04em',
+              whiteSpace: 'nowrap',
+            }}>
+              <Calendar size={11} />
+              {exp.period}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
+            <span style={{
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
+              fontSize: '0.85rem',
+              fontWeight: 700,
+              color: 'var(--blue)',
+              fontFamily: 'var(--font-heading)',
+            }}>
+              {exp.company}
+            </span>
+            <span style={{
+              display: 'flex', alignItems: 'center', gap: '0.35rem',
+              fontSize: '0.8rem',
+              color: 'var(--text-muted)',
+              fontFamily: 'var(--font-heading)',
+            }}>
+              <MapPin size={12} />
+              {exp.location}
+            </span>
+          </div>
         </div>
 
-        {/* Timeline Layout */}
-        <div style={{
-          position: 'relative',
-          maxWidth: '800px',
-          margin: '0 auto',
-          padding: '1rem 0'
-        }}>
-          {/* Vertical Center Line */}
-          <div style={{
-            position: 'absolute',
-            left: '31px',
-            top: '0',
-            bottom: '0',
-            width: '2px',
-            background: 'var(--border-color)',
-            zIndex: 1
-          }}></div>
+        {/* Bullets */}
+        <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {exp.bullets.map((bullet, i) => (
+            <li key={i} style={{
+              display: 'flex',
+              gap: '0.75rem',
+              fontSize: '0.88rem',
+              color: 'var(--text-secondary)',
+              lineHeight: 1.65,
+            }}>
+              <Zap size={14} color="var(--cyan)" style={{ flexShrink: 0, marginTop: '0.22rem', opacity: 0.7 }} />
+              {bullet}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </motion.div>
+  );
+}
 
-          {/* Timeline Cards */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activePersona}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}
-            >
-              {currentExperience.map((exp, idx) => (
-                <div
-                  key={exp.role + exp.company}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    position: 'relative',
-                    zIndex: 2,
-                  }}
-                >
-                  {/* Timeline Circle Node */}
-                  <div style={{
-                    width: '64px',
-                    height: '64px',
-                    borderRadius: '50%',
-                    background: 'var(--bg-secondary)',
-                    border: '3px solid var(--primary)',
-                    boxShadow: '0 0 15px var(--border-glow)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'var(--primary)',
-                    flexShrink: 0,
-                    marginRight: '2rem',
-                    zIndex: 3
-                  }}>
-                    <Briefcase size={22} />
-                  </div>
+export default function Experience({ activePersona, personaData }) {
+  const currentPersona = personaData[activePersona];
+  const headerRef = useRef();
+  const headerInView = useInView(headerRef, { once: true, margin: '-80px' });
 
-                  {/* Experience Info Panel */}
-                  <div className="glass-panel" style={{
-                    flexGrow: 1,
-                    padding: '2.25rem',
-                    borderRadius: '24px',
-                    width: 'calc(100% - 96px)'
-                  }}>
-                    {/* Header */}
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                      flexWrap: 'wrap',
-                      gap: '0.75rem',
-                      marginBottom: '1rem'
-                    }}>
-                      <div>
-                        <h3 style={{
-                          fontFamily: 'var(--font-heading)',
-                          fontSize: '1.35rem',
-                          fontWeight: 700,
-                          color: 'var(--text-primary)',
-                          marginBottom: '0.25rem'
-                        }}>
-                          {exp.role}
-                        </h3>
-                        <h4 style={{
-                          fontSize: '1.05rem',
-                          color: 'var(--primary)',
-                          fontWeight: 600
-                        }}>
-                          {exp.company}
-                        </h4>
-                      </div>
+  return (
+    <section id="experience" className="section" style={{
+      background: 'linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-surface) 100%)',
+    }}>
+      {/* Glow */}
+      <div style={{
+        position: 'absolute',
+        top: '30%', right: '-10%',
+        width: '40vw', height: '40vw',
+        borderRadius: '50%',
+        background: 'radial-gradient(ellipse, rgba(168, 85, 247, 0.04) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }} />
 
-                      {/* Meta Pills */}
-                      <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'flex-end',
-                        gap: '0.4rem',
-                        fontSize: '0.85rem',
-                        color: 'var(--text-muted)'
-                      }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                          <Calendar size={14} />
-                          {exp.period}
-                        </span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                          <MapPin size={14} />
-                          {exp.location}
-                        </span>
-                      </div>
-                    </div>
+      <div className="container">
+        {/* Header */}
+        <div ref={headerRef} style={{ marginBottom: '5rem' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={headerInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="section-eyebrow">Professional Journey</div>
+            <h2 className="section-title">
+              Work{' '}
+              <span className="text-gradient">Experience</span>
+            </h2>
+            <p className="section-subtitle">
+              Real-world internships building production AI systems, NLP pipelines, and automation tools.
+            </p>
+          </motion.div>
+        </div>
 
-                    {/* Bullet Accomplishments */}
-                    <ul style={{
-                      listStyle: 'none',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '0.75rem',
-                      color: 'var(--text-secondary)',
-                      fontSize: '0.95rem',
-                      lineHeight: 1.6
-                    }}>
-                      {exp.bullets.map((bullet, bIdx) => (
-                        <li
-                          key={bIdx}
-                          style={{
-                            position: 'relative',
-                            paddingLeft: '1.5rem',
-                          }}
-                        >
-                          {/* Circle List Item Marker */}
-                          <span style={{
-                            position: 'absolute',
-                            left: '3px',
-                            top: '10px',
-                            width: '6px',
-                            height: '6px',
-                            borderRadius: '50%',
-                            background: 'var(--primary)'
-                          }}></span>
-                          {bullet}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ))}
-            </motion.div>
-          </AnimatePresence>
+        {/* Timeline */}
+        <div style={{ maxWidth: '860px' }}>
+          {currentPersona.experience.map((exp, idx) => (
+            <ExperienceCard key={idx} exp={exp} index={idx} />
+          ))}
         </div>
       </div>
     </section>
