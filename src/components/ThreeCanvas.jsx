@@ -1,6 +1,6 @@
 import React, { useRef, useMemo, useEffect } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Float, MeshDistortMaterial, MeshWobbleMaterial, Stars } from '@react-three/drei';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { Float, MeshDistortMaterial, Stars } from '@react-three/drei';
 import * as THREE from 'three';
 
 /* ─── Smooth Mouse Tracker ─── */
@@ -28,7 +28,7 @@ function useMouseTracker() {
 /* ─── Ambient Particle Field ─── */
 function ParticleField() {
   const points = useRef();
-  const count = 2000;
+  const count = 1800;
 
   const [positions, colors] = useMemo(() => {
     const pos = new Float32Array(count * 3);
@@ -38,7 +38,7 @@ function ParticleField() {
     const c3 = new THREE.Color('#4f87ff');
 
     for (let i = 0; i < count; i++) {
-      const r = Math.random() * 14 + 2;
+      const r = Math.random() * 15 + 2;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
       pos[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
@@ -56,8 +56,8 @@ function ParticleField() {
 
   useFrame((state) => {
     if (!points.current) return;
-    points.current.rotation.y = state.clock.elapsedTime * 0.025;
-    points.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.015) * 0.08;
+    points.current.rotation.y = state.clock.elapsedTime * 0.02;
+    points.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.01) * 0.05;
   });
 
   return (
@@ -66,117 +66,205 @@ function ParticleField() {
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
         <bufferAttribute attach="attributes-color" args={[colors, 3]} />
       </bufferGeometry>
-      <pointsMaterial size={0.025} vertexColors sizeAttenuation transparent opacity={0.7} depthWrite={false} />
+      <pointsMaterial size={0.02} vertexColors sizeAttenuation transparent opacity={0.6} depthWrite={false} />
     </points>
   );
 }
 
-/* ─── Hero Central Shape ─── */
+/* ─── Neural Constellation Network ─── */
+function NeuralConstellation() {
+  const groupRef = useRef();
+  const mouse = useMouseTracker();
+
+  // Generate node positions in a sphere
+  const nodeCount = 15;
+  const nodes = useMemo(() => {
+    const list = [];
+    const colors = ['#38bdf8', '#a855f7', '#4f87ff'];
+    for (let i = 0; i < nodeCount; i++) {
+      const r = 2.2 + Math.random() * 0.8;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      list.push({
+        x: r * Math.sin(phi) * Math.cos(theta),
+        y: r * Math.sin(phi) * Math.sin(theta),
+        z: r * Math.cos(phi),
+        color: colors[i % colors.length],
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.3 + Math.random() * 0.4
+      });
+    }
+    return list;
+  }, []);
+
+  // Pre-calculate node connection pairs (if distance < 2.6)
+  const connections = useMemo(() => {
+    const conns = [];
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const dz = nodes[i].z - nodes[j].z;
+        const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+        if (dist < 2.6) {
+          conns.push({ from: nodes[i], to: nodes[j] });
+        }
+      }
+    }
+    return conns;
+  }, [nodes]);
+
+  useFrame((state) => {
+    if (!groupRef.current) return;
+    const t = state.clock.elapsedTime;
+    
+    // Group level rotation + mouse interaction
+    groupRef.current.rotation.y = t * 0.05 + mouse.current.x * 0.35;
+    groupRef.current.rotation.x = Math.sin(t * 0.03) * 0.1 + mouse.current.y * 0.25;
+
+    // Sway individual children nodes slightly
+    groupRef.current.children.forEach((child) => {
+      if (child.userData && child.userData.isNode) {
+        const { phase, speed, startX, startY, startZ } = child.userData;
+        child.position.x = startX + Math.sin(t * speed + phase) * 0.15;
+        child.position.y = startY + Math.cos(t * speed * 1.2 + phase) * 0.15;
+        child.position.z = startZ + Math.sin(t * speed * 0.8 + phase) * 0.15;
+      }
+    });
+  });
+
+  return (
+    <group ref={groupRef}>
+      {/* Draw Nodes */}
+      {nodes.map((n, idx) => (
+        <mesh 
+          key={idx} 
+          position={[n.x, n.y, n.z]}
+          userData={{ isNode: true, phase: n.phase, speed: n.speed, startX: n.x, startY: n.y, startZ: n.z }}
+        >
+          <sphereGeometry args={[0.065, 12, 12]} />
+          <meshBasicMaterial color={n.color} transparent opacity={0.8} />
+        </mesh>
+      ))}
+
+      {/* Draw static connecting paths as segment lines */}
+      {connections.map((c, idx) => {
+        const pts = new Float32Array([
+          c.from.x, c.from.y, c.from.z,
+          c.to.x, c.to.y, c.to.z
+        ]);
+        return (
+          <line key={idx}>
+            <bufferGeometry>
+              <bufferAttribute attach="attributes-position" args={[pts, 3]} />
+            </bufferGeometry>
+            <lineBasicMaterial color="#4f87ff" transparent opacity={0.12} />
+          </line>
+        );
+      })}
+    </group>
+  );
+}
+
+/* ─── Hero Central Shape: Interactive Morphed Torus Knot ─── */
 function CentralShape() {
-  const meshRef = useRef();
-  const innerRef = useRef();
+  const groupRef = useRef();
+  const knotRef = useRef();
+  const wireKnotRef = useRef();
   const mouse = useMouseTracker();
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
-    if (meshRef.current) {
-      meshRef.current.rotation.y = t * 0.12 + mouse.current.x * 0.4;
-      meshRef.current.rotation.x = Math.sin(t * 0.08) * 0.15 + mouse.current.y * 0.3;
+    
+    if (groupRef.current) {
+      groupRef.current.rotation.y = t * 0.04 + mouse.current.x * 0.25;
+      groupRef.current.rotation.x = Math.sin(t * 0.02) * 0.08 + mouse.current.y * 0.18;
     }
-    if (innerRef.current) {
-      innerRef.current.rotation.y = -t * 0.2;
-      innerRef.current.rotation.z = t * 0.15;
+    if (knotRef.current) {
+      knotRef.current.rotation.z = t * 0.15;
+    }
+    if (wireKnotRef.current) {
+      wireKnotRef.current.rotation.z = -t * 0.1;
+      wireKnotRef.current.rotation.y = t * 0.05;
     }
   });
 
   return (
-    <group>
-      {/* Outer wireframe icosahedron */}
-      <mesh ref={meshRef} position={[0, 0, 0]}>
-        <icosahedronGeometry args={[1.8, 1]} />
-        <meshStandardMaterial
-          color="#38bdf8"
-          wireframe
-          transparent
-          opacity={0.12}
-        />
-      </mesh>
-
-      {/* Central distorted blob */}
-      <Float speed={1.5} rotationIntensity={0.3} floatIntensity={0.6}>
-        <mesh ref={innerRef} position={[0, 0, 0]}>
-          <icosahedronGeometry args={[1.1, 4]} />
+    <group ref={groupRef}>
+      {/* Distorted Liquid-glass Torus Knot */}
+      <Float speed={1.8} rotationIntensity={0.2} floatIntensity={0.5}>
+        <mesh ref={knotRef} position={[0, 0, 0]}>
+          <torusKnotGeometry args={[0.9, 0.28, 180, 24, 3, 5]} />
           <MeshDistortMaterial
             color="#4f87ff"
-            distort={0.45}
-            speed={2.5}
-            roughness={0}
-            metalness={0.9}
-            envMapIntensity={2}
+            distort={0.36}
+            speed={2.2}
+            roughness={0.08}
+            metalness={0.92}
+            envMapIntensity={2.5}
+            transparent
+            opacity={0.9}
           />
         </mesh>
       </Float>
 
+      {/* Wireframe outer Torus Knot wrapping it */}
+      <mesh ref={wireKnotRef} position={[0, 0, 0]}>
+        <torusKnotGeometry args={[1.35, 0.16, 120, 16, 2, 3]} />
+        <meshStandardMaterial
+          color="#a855f7"
+          wireframe
+          transparent
+          opacity={0.08}
+        />
+      </mesh>
+
       {/* Orbiting ring 1 */}
-      <mesh rotation={[Math.PI / 3, 0, 0]}>
-        <torusGeometry args={[2.6, 0.025, 8, 120]} />
-        <meshBasicMaterial color="#38bdf8" transparent opacity={0.5} />
+      <mesh rotation={[Math.PI / 4, Math.PI / 6, 0]}>
+        <torusGeometry args={[2.5, 0.015, 8, 100]} />
+        <meshBasicMaterial color="#38bdf8" transparent opacity={0.4} />
       </mesh>
 
       {/* Orbiting ring 2 */}
-      <mesh rotation={[0, Math.PI / 5, Math.PI / 4]}>
-        <torusGeometry args={[3.2, 0.018, 8, 120]} />
-        <meshBasicMaterial color="#a855f7" transparent opacity={0.35} />
-      </mesh>
-
-      {/* Orbiting ring 3 */}
-      <mesh rotation={[Math.PI / 2, Math.PI / 6, 0]}>
-        <torusGeometry args={[3.8, 0.012, 8, 120]} />
-        <meshBasicMaterial color="#6366f1" transparent opacity={0.25} />
+      <mesh rotation={[Math.PI / 3, -Math.PI / 5, Math.PI / 8]}>
+        <torusGeometry args={[3.0, 0.012, 8, 100]} />
+        <meshBasicMaterial color="#a855f7" transparent opacity={0.3} />
       </mesh>
     </group>
   );
 }
 
-/* ─── Floating Accent Gems ─── */
-function AccentGem({ position, color, scale = 1, speed = 2, floatDir = 1 }) {
+/* ─── Floating Polyhedral Accents (Dodecahedron & Tetrahedron) ─── */
+function FloatingAccent({ position, type = 'dodecahedron', color, scale = 1, speed = 1, floatDir = 1 }) {
   const ref = useRef();
   const mouse = useMouseTracker();
 
   useFrame((state) => {
     if (!ref.current) return;
     const t = state.clock.elapsedTime;
-    ref.current.rotation.x += 0.01 * speed;
-    ref.current.rotation.y += 0.008 * speed;
-    // Subtle mouse parallax
-    ref.current.position.x = position[0] + mouse.current.x * 0.3;
-    ref.current.position.y = position[1] + mouse.current.y * 0.2 + Math.sin(t * speed * 0.4) * 0.3 * floatDir;
+    
+    ref.current.rotation.x = t * 0.2 * speed;
+    ref.current.rotation.y = t * 0.25 * speed;
+
+    // Parallax + slow float animation
+    ref.current.position.x = position[0] + mouse.current.x * 0.35;
+    ref.current.position.y = position[1] + mouse.current.y * 0.25 + Math.sin(t * speed * 0.3) * 0.4 * floatDir;
   });
 
   return (
     <mesh ref={ref} position={position} scale={scale}>
-      <octahedronGeometry args={[0.35, 0]} />
-      <meshPhongMaterial color={color} emissive={color} emissiveIntensity={0.4} shininess={200} flatShading />
-    </mesh>
-  );
-}
-
-/* ─── Floating Cube Accent ─── */
-function FloatingCube({ position, color, scale = 1, speed = 1 }) {
-  const ref = useRef();
-
-  useFrame((state) => {
-    if (!ref.current) return;
-    const t = state.clock.elapsedTime;
-    ref.current.rotation.x = t * 0.3 * speed;
-    ref.current.rotation.y = t * 0.4 * speed;
-    ref.current.position.y = position[1] + Math.sin(t * speed * 0.5) * 0.4;
-  });
-
-  return (
-    <mesh ref={ref} position={position} scale={scale}>
-      <boxGeometry args={[0.5, 0.5, 0.5]} />
-      <meshStandardMaterial color={color} metalness={0.8} roughness={0.2} />
+      {type === 'dodecahedron' ? (
+        <dodecahedronGeometry args={[0.34, 0]} />
+      ) : (
+        <tetrahedronGeometry args={[0.28, 0]} />
+      )}
+      <meshPhongMaterial 
+        color={color} 
+        emissive={color} 
+        emissiveIntensity={0.3} 
+        shininess={250} 
+        flatShading 
+      />
     </mesh>
   );
 }
@@ -189,22 +277,22 @@ function Lights() {
   useFrame((state) => {
     const t = state.clock.elapsedTime;
     if (light1.current) {
-      light1.current.position.x = Math.sin(t * 0.4) * 6;
-      light1.current.position.z = Math.cos(t * 0.4) * 6;
+      light1.current.position.x = Math.sin(t * 0.3) * 7;
+      light1.current.position.z = Math.cos(t * 0.3) * 7;
     }
     if (light2.current) {
-      light2.current.position.x = Math.cos(t * 0.3) * 5;
-      light2.current.position.z = Math.sin(t * 0.3) * 5;
+      light2.current.position.x = Math.cos(t * 0.2) * 6;
+      light2.current.position.z = Math.sin(t * 0.2) * 6;
     }
   });
 
   return (
     <>
-      <ambientLight intensity={0.15} />
-      <directionalLight position={[5, 8, 5]} intensity={1.2} color="#38bdf8" />
-      <pointLight ref={light1} position={[5, 2, 5]} intensity={2.5} color="#4f87ff" distance={18} />
-      <pointLight ref={light2} position={[-5, -2, -3]} intensity={1.5} color="#a855f7" distance={15} />
-      <spotLight position={[0, 10, 0]} intensity={2} color="#ffffff" angle={0.35} penumbra={0.9} />
+      <ambientLight intensity={0.2} />
+      <directionalLight position={[6, 9, 6]} intensity={1.4} color="#38bdf8" />
+      <pointLight ref={light1} position={[6, 3, 6]} intensity={3} color="#4f87ff" distance={20} />
+      <pointLight ref={light2} position={[-6, -3, -4]} intensity={2} color="#a855f7" distance={18} />
+      <spotLight position={[0, 12, 0]} intensity={2.5} color="#ffffff" angle={0.4} penumbra={0.9} />
     </>
   );
 }
@@ -220,27 +308,24 @@ export default function ThreeCanvas() {
       pointerEvents: 'none',
     }}>
       <Canvas
-        camera={{ position: [0, 0, 8], fov: 50 }}
+        camera={{ position: [0, 0, 7.5], fov: 52 }}
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
         dpr={[1, 2]}
       >
         <Lights />
         <ParticleField />
         <CentralShape />
+        <NeuralConstellation />
 
-        {/* Accent Gems */}
-        <AccentGem position={[-5, 2.5, -1]}  color="#38bdf8" speed={1.5} scale={0.9} floatDir={1} />
-        <AccentGem position={[5.5, -1.5, -2]} color="#a855f7" speed={2.2} scale={0.7} floatDir={-1} />
-        <AccentGem position={[-4, -2.8, 0.5]} color="#6366f1" speed={1.8} scale={0.5} floatDir={1} />
-        <AccentGem position={[4, 3.2, -3]}    color="#e879f9" speed={2.5} scale={0.6} floatDir={-1} />
-        <AccentGem position={[0.5, 4, -2]}    color="#38bdf8" speed={1.2} scale={0.4} floatDir={1} />
-        <AccentGem position={[-6, 0, -1.5]}   color="#4f87ff" speed={3}   scale={0.35} floatDir={-1} />
+        {/* Floating Accent Shapes (Dodecahedrons and Tetrahedrons) */}
+        <FloatingAccent position={[-5, 2.2, -1]} type="dodecahedron" color="#38bdf8" speed={1.3} scale={0.9} floatDir={1} />
+        <FloatingAccent position={[5.2, -1.8, -2]} type="tetrahedron" color="#a855f7" speed={2.0} scale={0.7} floatDir={-1} />
+        <FloatingAccent position={[-3.8, -2.6, 0.5]} type="dodecahedron" color="#6366f1" speed={1.5} scale={0.6} floatDir={1} />
+        <FloatingAccent position={[4.2, 2.8, -2.5]} type="tetrahedron" color="#e879f9" speed={2.2} scale={0.8} floatDir={-1} />
+        <FloatingAccent position={[0.8, 3.8, -1.8]} type="dodecahedron" color="#38bdf8" speed={1.1} scale={0.5} floatDir={1} />
+        <FloatingAccent position={[-5.8, -0.2, -1.2]} type="tetrahedron" color="#4f87ff" speed={2.6} scale={0.4} floatDir={-1} />
 
-        {/* Floating Cubes */}
-        <FloatingCube position={[6, 2, -2]}  color="#38bdf8" scale={0.5} speed={0.8} />
-        <FloatingCube position={[-6, -1, -3]} color="#a855f7" scale={0.4} speed={1.2} />
-
-        <Stars radius={60} depth={40} count={800} factor={3} saturation={0} fade speed={0.5} />
+        <Stars radius={55} depth={45} count={900} factor={3.5} saturation={0} fade speed={0.6} />
       </Canvas>
     </div>
   );

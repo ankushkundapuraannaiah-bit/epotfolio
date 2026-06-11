@@ -60,17 +60,6 @@ export const resumeData = {
             "Participated in research tasks — read and summarized findings from recent AI/NLP/DL papers to guide team decisions.",
             "Contributed to RAG (Retrieval-Augmented Generation) pipelines and vector database integrations for LLM grounding."
           ]
-        },
-        {
-          role: "Python Developer Intern",
-          company: "Pinnacle Labs",
-          location: "Bengaluru, India",
-          period: "Jan 2026 – Feb 2026",
-          bullets: [
-            "Developed Python automation scripts and data preprocessing pipelines using NumPy and Pandas for structured datasets.",
-            "Applied data cleaning, transformation, and model evaluation logic to support ML-ready data workflows.",
-            "Built REST API integrations and contributed to backend modules, demonstrating strong Python development fundamentals."
-          ]
         }
       ],
       projects: [
@@ -123,17 +112,6 @@ export const resumeData = {
             "Built and maintained RAG (Retrieval-Augmented Generation) pipelines integrated with vector databases, improving system reliability, retrieval accuracy, and response observability.",
             "Proactively researched and adopted new engineering methods, tools, and frameworks (LangChain, transformer fine-tuning, prompt engineering) within days of discovery.",
             "Reviewed recent AI/ML developments and contributed knowledge of emerging techniques to improve product availability, reliability, and operational consistency."
-          ]
-        },
-        {
-          role: "Python Developer Intern",
-          company: "Pinnacle Labs",
-          location: "Bengaluru, India",
-          period: "Jan 2026 – Feb 2026",
-          bullets: [
-            "Developed Python automation scripts and data preprocessing pipelines using NumPy and Pandas, improving processing efficiency and data quality for downstream ML workflows.",
-            "Built REST API integrations and contributed modular backend components following software engineering best practices for maintainability and scalability.",
-            "Collaborated effectively in a team environment, completing assigned software tasks within deadlines while maintaining clear documentation and code quality standards."
           ]
         }
       ],
@@ -189,17 +167,6 @@ export const resumeData = {
             "Implemented structured logging, experiment tracking, and reproducible evaluation pipelines — analogous to regression runners and scenario replay systems in RL environments.",
             "Collaborated directly with AI researchers to understand environment requirements and translate them into working software prototypes, iterating rapidly based on feedback."
           ]
-        },
-        {
-          role: "Python Developer Intern",
-          company: "Pinnacle Labs",
-          location: "Bengaluru, India",
-          period: "Jan 2026 – Feb 2026",
-          bullets: [
-            "Developed robust Python data preprocessing pipelines with modular design, error handling, and transformation logic — foundational for RL environment state management and transition modeling.",
-            "Built and integrated REST APIs for backend data workflows, demonstrating proficiency in designing scalable service interfaces and integration APIs.",
-            "Applied structured data engineering practices: schema design, data validation, and pipeline testing — skills directly transferable to environment side-effect modeling."
-          ]
         }
       ],
       projects: [
@@ -253,16 +220,6 @@ export const resumeData = {
             "Built interactive prototypes and design systems with reusable components in Figma, enabling faster developer handoff and consistent visual language.",
             "Collaborated closely with developers to ensure pixel-perfect implementation of UI designs; used HTML/CSS knowledge to bridge design-dev gaps.",
             "Designed interfaces for RAG pipelines and vector database tools — applying principles of AI product UX to complex, data-heavy workflows."
-          ]
-        },
-        {
-          role: "Python Developer Intern",
-          company: "Pinnacle Labs",
-          location: "Bengaluru, India",
-          period: "Jan 2026 – Feb 2026",
-          bullets: [
-            "Developed data preprocessing and automation scripts; applied data visualization thinking to surface insights in structured datasets.",
-            "Built REST API integrations and contributed to backend modules, gaining technical fluency that informs developer-aware, implementation-ready UI designs."
           ]
         }
       ],
